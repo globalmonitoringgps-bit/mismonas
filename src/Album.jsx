@@ -100,7 +100,7 @@ function Album({ usuario }) {
     if (limpiarBusqueda) setBusqueda('');
     const docRef = doc(db, "inventarios", usuario.uid);
     await updateDoc(docRef, { [codigo]: nuevaCantidad });
-    inputRef.current?.focus();
+    // Se eliminó el focus() para evitar que el teclado salte en móviles
   };
 
   const reiniciarAlbum = async () => {
@@ -114,7 +114,7 @@ function Album({ usuario }) {
         await setDoc(docRef, resetData);
       }
     }
-    inputRef.current?.focus();
+    // Se eliminó el focus() aquí también
   };
 
   const llenarEquipo = async (seccion) => {
