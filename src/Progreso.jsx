@@ -7,6 +7,8 @@ import { BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveCo
 const WC_COLORS = { green: "#00B140", darkBlue: "#00205B", lightBlue: "#00A3E0", red: "#E4002B", lime: "#97D700" };
 
 const seccionesAlbum = [
+  { prefijo: "", nombre: "Especial Panini", bandera: "/logo_panini_especial.png", inicio: 0, fin: 0 },
+  { prefijo: "FWC", nombre: "Especiales FIFA", bandera: "https://upload.wikimedia.org/wikipedia/commons/a/aa/FIFA_logo_without_slogan.svg", inicio: 1, fin: 20 },
   { prefijo: "USA", nombre: "Estados Unidos", bandera: "https://flagcdn.com/w40/us.png", inicio: 1, fin: 20 },
   { prefijo: "MEX", nombre: "México", bandera: "https://flagcdn.com/w40/mx.png", inicio: 1, fin: 20 },
   { prefijo: "CAN", nombre: "Canadá", bandera: "https://flagcdn.com/w40/ca.png", inicio: 1, fin: 20 },
@@ -54,7 +56,8 @@ const seccionesAlbum = [
   { prefijo: "IRQ", nombre: "Irak", bandera: "https://flagcdn.com/w40/iq.png", inicio: 1, fin: 20 },
   { prefijo: "JOR", nombre: "Jordania", bandera: "https://flagcdn.com/w40/jo.png", inicio: 1, fin: 20 },
   { prefijo: "UZB", nombre: "Uzbekistán", bandera: "https://flagcdn.com/w40/uz.png", inicio: 1, fin: 20 },
-  { prefijo: "NZL", nombre: "Nueva Zelanda", bandera: "https://flagcdn.com/w40/nz.png", inicio: 1, fin: 20 }
+  { prefijo: "NZL", nombre: "Nueva Zelanda", bandera: "https://flagcdn.com/w40/nz.png", inicio: 1, fin: 20 },
+  { prefijo: "CC", nombre: "Coca-Cola", bandera: "https://upload.wikimedia.org/wikipedia/commons/c/ce/Coca-Cola_logo.svg", inicio: 1, fin: 14 }
 ];
 
 const CustomXAxisTick = (props) => {
@@ -96,6 +99,7 @@ const CustomTooltip = ({ active, payload }) => {
 
 function Progreso() {
   const [datosProgreso, setDatosProgreso] = useState([]);
+  const [estadisticasGlobales, setEstadisticasGlobales] = useState(null);
   const [cargando, setCargando] = useState(true);
 
   useEffect(() => {
@@ -107,19 +111,43 @@ function Progreso() {
       const docSnap = await getDoc(docRef);
       const miData = docSnap.exists() ? docSnap.data() : {};
 
+      // Variables para el gráfico de dona global
+      let faltan = 0;
+      let exactas = 0;
+      let conRepetidas = 0;
+      let volumenRepetidasExtra = 0;
+      let totalAlbum = 0;
+
+      // Cálculo por secciones (Para el gráfico de barras) y Global (Para la dona)
       const progresoArray = seccionesAlbum.map(seccion => {
         let obtenidas = 0;
         const total = seccion.fin - seccion.inicio + 1;
         
         for (let i = seccion.inicio; i <= seccion.fin; i++) {
-          let codigo = `${seccion.prefijo}${i}`;
-          if (miData[codigo] && miData[codigo] >= 1) obtenidas++;
+          totalAlbum++;
+          let codigo = seccion.prefijo === "" && i === 0 ? "00" : `${seccion.prefijo}${i}`;
+          let cant = miData[codigo] || 0;
+          
+          if (cant === 0) {
+            faltan++;
+          } else if (cant === 1) {
+            exactas++;
+            obtenidas++;
+          } else if (cant > 1) {
+            conRepetidas++;
+            obtenidas++;
+            volumenRepetidasExtra += (cant - 1);
+          }
         }
         return { ...seccion, obtenidas, total, porcentaje: (obtenidas / total) * 100 };
       });
 
-      progresoArray.sort((a, b) => b.obtenidas - a.obtenidas);
-      setDatosProgreso(progresoArray);
+      // Solo mostramos en el gráfico de barras los que tienen algún prefijo válido (quitamos el especial 00 si queremos, pero lo dejamos por si acaso)
+      const datosBarras = progresoArray.filter(s => s.prefijo !== "");
+      datosBarras.sort((a, b) => b.obtenidas - a.obtenidas);
+      
+      setDatosProgreso(datosBarras);
+      setEstadisticasGlobales({ faltan, exactas, conRepetidas, volumenRepetidasExtra, totalAlbum });
       setCargando(false);
     };
 
@@ -134,9 +162,77 @@ function Progreso() {
 
   const anchoGrafico = Math.max(800, datosProgreso.length * 50);
 
+  // Cálculos para el estilo del gráfico de dona
+  let pegadas = 0, porcentaje = 0, conicGradient = "";
+  if (estadisticasGlobales) {
+    pegadas = estadisticasGlobales.exactas + estadisticasGlobales.conRepetidas;
+    porcentaje = ((pegadas / estadisticasGlobales.totalAlbum) * 100).toFixed(1);
+    const pFaltan = (estadisticasGlobales.faltan / estadisticasGlobales.totalAlbum) * 100;
+    const pExactas = (estadisticasGlobales.exactas / estadisticasGlobales.totalAlbum) * 100;
+    
+    conicGradient = `conic-gradient(
+      ${WC_COLORS.red} 0% ${pFaltan}%, 
+      ${WC_COLORS.green} ${pFaltan}% ${pFaltan + pExactas}%, 
+      ${WC_COLORS.lightBlue} ${pFaltan + pExactas}% 100%
+    )`;
+  }
+
   return (
-    <div style={{ fontFamily: "'Inter', sans-serif", width: "100%", margin: "auto", padding: "10px" }}>
+    <div style={{ fontFamily: "'Inter', sans-serif", width: "100%", margin: "auto", padding: "10px", paddingBottom: "50px" }}>
       
+      {/* 1. MÓDULO SUPERIOR: PROGRESO GLOBAL (DONA) */}
+      {estadisticasGlobales && (
+        <div style={{ background: "white", padding: "30px 20px", borderRadius: "15px", boxShadow: "0 4px 20px rgba(0,0,0,0.06)", border: `1px solid ${WC_COLORS.lime}`, marginBottom: "40px" }}>
+          
+          <div style={{ textAlign: "center", marginBottom: "25px" }}>
+            <h2 style={{ margin: "0 0 5px 0", color: WC_COLORS.darkBlue, fontWeight: "900", fontSize: "1.8em" }}>🌟 Progreso Global</h2>
+            <p style={{ margin: 0, fontSize: "0.9em", color: "#64748b" }}>Así va tu álbum en general.</p>
+          </div>
+
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "40px", justifyContent: "center", alignItems: "center" }}>
+            
+            {/* Gráfico de Dona CSS */}
+            <div style={{
+              width: "200px", height: "200px", borderRadius: "50%", background: conicGradient,
+              display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 10px 25px rgba(0,0,0,0.1)"
+            }}>
+              <div style={{
+                width: "140px", height: "140px", background: "white", borderRadius: "50%",
+                display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+                boxShadow: "inset 0 4px 10px rgba(0,0,0,0.1)"
+              }}>
+                <span style={{ fontSize: "2em", fontWeight: "900", color: WC_COLORS.darkBlue }}>{porcentaje}%</span>
+                <span style={{ fontSize: "0.7em", color: "#64748b", fontWeight: "bold" }}>COMPLETADO</span>
+              </div>
+            </div>
+
+            {/* Leyenda */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px", minWidth: "220px" }}>
+              <div style={{ background: "#f8fafc", padding: "10px 15px", borderRadius: "10px", borderLeft: `5px solid ${WC_COLORS.green}` }}>
+                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                  <span style={{ fontWeight: "bold", color: WC_COLORS.darkBlue, fontSize: "0.9em" }}>🟢 Exactas</span>
+                  <span style={{ fontWeight: "900" }}>{estadisticasGlobales.exactas}</span>
+                </div>
+              </div>
+              <div style={{ background: "#f8fafc", padding: "10px 15px", borderRadius: "10px", borderLeft: `5px solid ${WC_COLORS.lightBlue}` }}>
+                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                  <span style={{ fontWeight: "bold", color: WC_COLORS.darkBlue, fontSize: "0.9em" }}>🔵 Repetidas</span>
+                  <span style={{ fontWeight: "900" }}>{estadisticasGlobales.conRepetidas}</span>
+                </div>
+              </div>
+              <div style={{ background: "#f8fafc", padding: "10px 15px", borderRadius: "10px", borderLeft: `5px solid ${WC_COLORS.red}` }}>
+                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                  <span style={{ fontWeight: "bold", color: WC_COLORS.darkBlue, fontSize: "0.9em" }}>🔴 Faltantes</span>
+                  <span style={{ fontWeight: "900" }}>{estadisticasGlobales.faltan}</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* 2. MÓDULO INFERIOR: RANKING POR PAÍSES (BARRAS) */}
       <div style={{ textAlign: "center", marginBottom: "20px" }}>
         <h2 style={{ margin: "0 0 5px 0", color: WC_COLORS.darkBlue, fontWeight: "900", fontSize: "1.8em" }}>📈 Ranking de Llenado</h2>
         <p style={{ margin: 0, fontSize: "0.9em", color: "#64748b" }}>Interactúa con el gráfico o desliza para ver todas las selecciones.</p>
@@ -167,8 +263,9 @@ function Progreso() {
           </ResponsiveContainer>
         </div>
       </div>
+
     </div>
   );
 }
 
-export default Progreso;
+export default Progreso;  

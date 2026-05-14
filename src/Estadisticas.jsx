@@ -83,19 +83,17 @@ function Estadisticas() {
           }
         });
 
-        // 2. Sumamos los datos MANUALES DEL ADMIN (Lo que se ve en redes sociales)
+        // 2. Sumamos los datos MANUALES DEL ADMIN
         const mercadoRef = doc(db, 'estadisticas', 'mercado_global');
         const adminSnap = await getDoc(mercadoRef);
         
         if (adminSnap.exists()) {
           const dataAdmin = adminSnap.data();
           
-          // Solo sumamos la DEMANDA explícita (Las que piden)
           Object.entries(dataAdmin.faltantes || {}).forEach(([codigo, cant]) => {
             if (mercado[codigo]) mercado[codigo].demanda += cant;
           });
 
-          // Solo sumamos la OFERTA explícita (Las que ofrecen)
           Object.entries(dataAdmin.repetidas || {}).forEach(([codigo, cant]) => {
             if (mercado[codigo]) mercado[codigo].oferta += cant;
           });
@@ -111,9 +109,9 @@ function Estadisticas() {
             const cantidadUsuario = inventario[codigo] || 0;
             
             if (cantidadUsuario === 0) {
-              mercado[codigo].demanda += 1; // Al usuario le falta, suma a la demanda
+              mercado[codigo].demanda += 1;
             } else if (cantidadUsuario > 1) {
-              mercado[codigo].oferta += (cantidadUsuario - 1); // Cuántas tiene para dar (Oferta real)
+              mercado[codigo].oferta += (cantidadUsuario - 1);
             }
           });
         });
@@ -124,15 +122,14 @@ function Estadisticas() {
           balance: item.oferta - item.demanda
         }));
 
-        // LAS MÁS ABUNDANTES: Las que tienen el balance positivo más alto
+        // CAMBIO AQUÍ: Ahora extraemos 50 en lugar de 10
         const abundantesFormateadas = [...arregloEstadisticas]
           .sort((a, b) => b.balance - a.balance)
-          .slice(0, 10);
+          .slice(0, 50);
 
-        // LAS MÁS ESCASAS: Las que tienen el balance negativo más bajo
         const escasasFormateadas = [...arregloEstadisticas]
           .sort((a, b) => a.balance - b.balance)
-          .slice(0, 10);
+          .slice(0, 50);
 
         setTopEscasas(escasasFormateadas);
         setTopAbundantes(abundantesFormateadas);
@@ -159,7 +156,8 @@ function Estadisticas() {
     return (
       <div key={`${tipo}-${mona.codigo}`} style={{ 
         display: "flex", alignItems: "center", padding: "16px 20px", 
-        borderBottom: index === 9 ? "none" : "1px solid #f8fafc", gap: "20px",
+        borderBottom: index === 49 ? "none" : "1px solid #f8fafc", // CAMBIO AQUÍ: Se ajusta al límite 49
+        gap: "20px",
         background: esEspecial00 ? "linear-gradient(120deg, #fff 0%, #fef08a 50%, #fff 100%)" : "transparent"
       }}>
         {/* NÚMERO TOP */}
@@ -215,11 +213,13 @@ function Estadisticas() {
           <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "20px" }}>
             <div style={{ background: WC_COLORS.red, color: "white", padding: "12px", borderRadius: "12px", fontSize: "1.4em" }}>💎</div>
             <div>
-              <h3 style={{ margin: 0, color: WC_COLORS.red, fontWeight: "900", fontSize: "1.6em" }}>Top 10 Buscadas</h3>
+              {/* CAMBIO AQUÍ: Título actualizado */}
+              <h3 style={{ margin: 0, color: WC_COLORS.red, fontWeight: "900", fontSize: "1.6em" }}>Top 50 Buscadas</h3>
               <p style={{ margin: 0, color: "#64748b", fontSize: "0.9em" }}>Las que todo el mundo quiere.</p>
             </div>
           </div>
-          <div style={{ background: "white", borderRadius: "16px", boxShadow: "0 4px 20px rgba(0,0,0,0.05)", overflow: "hidden", border: `2px solid ${WC_COLORS.red}` }}>
+          {/* CAMBIO AQUÍ: Agregado maxHeight y overflowY para crear el scroll interno */}
+          <div style={{ background: "white", borderRadius: "16px", boxShadow: "0 4px 20px rgba(0,0,0,0.05)", overflowY: "auto", overflowX: "hidden", maxHeight: "600px", border: `2px solid ${WC_COLORS.red}` }}>
             {topEscasas.map((mona, index) => renderFilaMona(mona, index, 'escasa'))}
           </div>
         </div>
@@ -229,11 +229,13 @@ function Estadisticas() {
           <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "20px" }}>
             <div style={{ background: WC_COLORS.lime, color: WC_COLORS.darkBlue, padding: "12px", borderRadius: "12px", fontSize: "1.4em" }}>🔁</div>
             <div>
-              <h3 style={{ margin: 0, color: WC_COLORS.green, fontWeight: "900", fontSize: "1.6em" }}>Top 10 Repetidas</h3>
+              {/* CAMBIO AQUÍ: Título actualizado */}
+              <h3 style={{ margin: 0, color: WC_COLORS.green, fontWeight: "900", fontSize: "1.6em" }}>Top 50 Repetidas</h3>
               <p style={{ margin: 0, color: "#64748b", fontSize: "0.9em" }}>Las mejores para ofrecer en cambios.</p>
             </div>
           </div>
-          <div style={{ background: "white", borderRadius: "16px", boxShadow: "0 4px 20px rgba(0,0,0,0.05)", overflow: "hidden", border: `2px solid ${WC_COLORS.green}` }}>
+          {/* CAMBIO AQUÍ: Agregado maxHeight y overflowY para crear el scroll interno */}
+          <div style={{ background: "white", borderRadius: "16px", boxShadow: "0 4px 20px rgba(0,0,0,0.05)", overflowY: "auto", overflowX: "hidden", maxHeight: "600px", border: `2px solid ${WC_COLORS.green}` }}>
             {topAbundantes.map((mona, index) => renderFilaMona(mona, index, 'abundante'))}
           </div>
         </div>
