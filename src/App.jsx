@@ -6,7 +6,7 @@ import { collection, getDocs, query, orderBy, doc, getDoc } from 'firebase/fires
 
 import Login from './Login';
 import Album from './Album';
-import Trueques from './Trueques';
+import Trueques from './Trueques'; // Lo mantenemos importado por si alguna vez quieres revivirlo
 import Estadisticas from './Estadisticas';
 import Progreso from './Progreso';
 import MapaCiudades from './MapaCiudades';
@@ -27,7 +27,7 @@ function App() {
   const [usuario, setUsuario] = useState(null);
   const [nombreUsuario, setNombreUsuario] = useState('');
   
-  // Mantiene la lógica de si vienes desde un QR
+  // Mantiene la lógica de si vienes desde un QR (Auto-Match va directo a PvP)
   const [pestaña, setPestaña] = useState(() => {
     const params = new URLSearchParams(window.location.search);
     return params.has('match') ? 'pvp' : 'album';
@@ -36,7 +36,6 @@ function App() {
   const [publicaciones, setPublicaciones] = useState([]);
   const [cargando, setCargando] = useState(true);
 
-  // NUEVO: Estado para el botón de instalación
   const [promptInstalacion, setPromptInstalacion] = useState(null);
 
   const EMAILS_ADMIN = ["miglio3929@gmail.com"]; 
@@ -64,12 +63,9 @@ function App() {
     return () => unsub();
   }, []);
 
-  // NUEVO: Escuchador del evento de instalación PWA
   useEffect(() => {
     const manejarAvisoInstalacion = (e) => {
-      // Previene que Chrome muestre su propio aviso feo
       e.preventDefault();
-      // Guarda el evento en nuestro estado para usarlo en nuestro botón
       setPromptInstalacion(e);
     };
 
@@ -90,14 +86,10 @@ function App() {
 
   useEffect(() => { if (usuario) cargarGlobal(); }, [usuario, pestaña]);
 
-  // NUEVA: Función que se ejecuta al presionar nuestro botón de Instalar
   const instalarAplicacion = async () => {
     if (promptInstalacion) {
-      // Muestra el aviso oficial de instalación del sistema operativo
       promptInstalacion.prompt();
-      // Espera a que el usuario responda
       const { outcome } = await promptInstalacion.userChoice;
-      // Si aceptó instalar, ocultamos el botón
       if (outcome === 'accepted') {
         setPromptInstalacion(null);
       }
@@ -196,7 +188,6 @@ function App() {
 
           <div style={{ display: "flex", alignItems: "center", gap: "15px", flexWrap: "wrap" }}>
             
-            {/* NUEVO: BOTÓN DE INSTALAR (Solo aparece si el navegador lo permite y no está instalada) */}
             {promptInstalacion && (
               <button 
                 onClick={instalarAplicacion} 
@@ -231,7 +222,6 @@ function App() {
         </div>
       </header>
 
-      {/* Estilo CSS para que el botón de instalar llame la atención */}
       <style>{`
         @keyframes latido {
           0% { transform: scale(1); }
@@ -246,9 +236,14 @@ function App() {
           <nav style={{ display: "flex", gap: "10px", marginBottom: "30px", flexWrap: "wrap" }}>
             <button onClick={() => setPestaña('album')} style={estiloBoton('album')}>📖 Mi Álbum</button>
             <button onClick={() => setPestaña('progreso')} style={estiloBoton('progreso')}>📈 Progreso</button>
-            <button onClick={() => setPestaña('trueques')} style={estiloBoton('trueques')}>🤝 Intercambio</button>
+            
+            {/* EL MÓDULO ANTIGUO QUEDA OCULTO */}
+            {/* <button onClick={() => setPestaña('trueques')} style={estiloBoton('trueques')}>🤝 Intercambio</button> */}
+            
             <button onClick={() => setPestaña('estadisticas')} style={estiloBoton('estadisticas')}>🌍 Mercado</button>
-            <button onClick={() => setPestaña('pvp')} style={estiloBoton('pvp')}>🤝 PvP</button>
+            
+            {/* EL MÓDULO PVP AHORA TOMA EL NOMBRE PRINCIPAL */}
+            <button onClick={() => setPestaña('pvp')} style={estiloBoton('pvp')}>🤝 Intercambiar</button>
 
             {esAdmin && (
               <>
@@ -261,7 +256,9 @@ function App() {
           <main style={{ minHeight: "400px" }}>
             {pestaña === 'album' && <Album usuario={usuario} />}
             {pestaña === 'progreso' && <Progreso />}
-            {pestaña === 'trueques' && <Trueques usuarioActual={usuario} />}
+            
+            {/* {pestaña === 'trueques' && <Trueques usuarioActual={usuario} />} */}
+            
             {pestaña === 'estadisticas' && <Estadisticas />}
             {pestaña === 'pvp' && <PvP usuario={usuario} />}
             {pestaña === 'mapa' && esAdmin && <MapaCiudades publicaciones={publicaciones} />}
