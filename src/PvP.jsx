@@ -6,10 +6,10 @@ import html2canvas from 'html2canvas';
 
 const WC_COLORS = { green: "#00B140", darkBlue: "#00205B", lightBlue: "#00A3E0", red: "#E4002B", lime: "#97D700" };
 
-// ORDEN PERSONALIZADO SINCRONIZADO CON EL ÁLBUM PRINCIPAL
+// ORDEN PERSONALIZADO CON FWC CORREGIDO HASTA 19
 const seccionesAlbum = [
   { prefijo: "", nombre: "Especial Panini", bandera: "/logo_panini_especial.png", inicio: 0, fin: 0 },
-  { prefijo: "FWC", nombre: "Especiales FIFA", bandera: "https://upload.wikimedia.org/wikipedia/commons/a/aa/FIFA_logo_without_slogan.svg", inicio: 1, fin: 20 },
+  { prefijo: "FWC", nombre: "Especiales FIFA", bandera: "https://upload.wikimedia.org/wikipedia/commons/a/aa/FIFA_logo_without_slogan.svg", inicio: 1, fin: 19 },
   { prefijo: "MEX", nombre: "México", bandera: "https://flagcdn.com/w40/mx.png", inicio: 1, fin: 20 },
   { prefijo: "RSA", nombre: "Sudáfrica", bandera: "https://flagcdn.com/w40/za.png", inicio: 1, fin: 20 },
   { prefijo: "KOR", nombre: "Corea del Sur", bandera: "https://flagcdn.com/w40/kr.png", inicio: 1, fin: 20 },
@@ -521,31 +521,27 @@ function PvP({ usuario }) {
         </button>
       </div>
 
-      {/* BANDEJA DE TRUEQUES PENDIENTES CON BOTÓN DE EDITAR */}
-      {pendientes.length > 0 && (
-        <div style={{ background: "white", padding: "15px", borderRadius: "16px", marginBottom: "25px", border: `2px solid ${WC_COLORS.lightBlue}`, boxShadow: "0 4px 15px rgba(0,0,0,0.05)" }}>
-          <h4 style={{ margin: "0 0 15px 0", color: WC_COLORS.darkBlue, fontSize: "0.95em", textTransform: "uppercase", display: "flex", alignItems: "center", gap: "8px" }}>
-            ⏳ Trueques Pendientes <span style={{background: WC_COLORS.red, color: "white", padding: "2px 8px", borderRadius: "10px", fontSize: "0.8em"}}>{pendientes.length}</span>
-          </h4>
-          <div style={{ display: "flex", flexDirection: "column", gap: "10px", maxHeight: "250px", overflowY: "auto" }}>
-            {pendientes.map(p => (
-              <div key={p.id} style={{ background: editandoId === p.id ? "rgba(0, 163, 224, 0.1)" : "#f8fafc", padding: "12px", borderRadius: "10px", border: editandoId === p.id ? `2px solid ${WC_COLORS.lightBlue}` : "1px solid #e2e8f0", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px" }}>
-                <div style={{ flex: "1 1 200px" }}>
-                  <div style={{ fontSize: "0.85em", color: WC_COLORS.darkBlue, marginBottom: "4px" }}><b>📤 Entregas:</b> {p.doy.join(", ")}</div>
-                  <div style={{ fontSize: "0.85em", color: WC_COLORS.green }}><b>📥 Recibes:</b> {p.recibo.join(", ")}</div>
-                </div>
-                <div style={{ display: "flex", gap: "5px", flexWrap: "wrap" }}>
-                  <button onClick={() => cancelarPendiente(p.id)} style={{ background: "white", color: WC_COLORS.red, border: `1px solid ${WC_COLORS.red}`, padding: "6px 10px", borderRadius: "8px", fontWeight: "bold", cursor: "pointer", fontSize: "0.8em" }}>Cancelar</button>
-                  <button onClick={() => editarPendiente(p)} style={{ background: "white", color: WC_COLORS.lightBlue, border: `1px solid ${WC_COLORS.lightBlue}`, padding: "6px 10px", borderRadius: "8px", fontWeight: "bold", cursor: "pointer", fontSize: "0.8em" }}>✏️ Editar</button>
-                  <button onClick={() => confirmarTruequePendiente(p)} style={{ background: WC_COLORS.green, color: "white", border: "none", padding: "6px 10px", borderRadius: "8px", fontWeight: "bold", cursor: "pointer", fontSize: "0.8em", boxShadow: "0 2px 4px rgba(0,0,0,0.1)" }}>✅ Completar</button>
-                </div>
+      <div style={{ background: "white", padding: "15px", borderRadius: "16px", marginBottom: "25px", border: `2px solid ${WC_COLORS.lightBlue}`, boxShadow: "0 4px 15px rgba(0,0,0,0.05)" }}>
+        <h4 style={{ margin: "0 0 15px 0", color: WC_COLORS.darkBlue, fontSize: "0.95em", textTransform: "uppercase", display: "flex", alignItems: "center", gap: "8px" }}>
+          ⏳ Trueques Pendientes <span style={{background: WC_COLORS.red, color: "white", padding: "2px 8px", borderRadius: "10px", fontSize: "0.8em"}}>{pendientes.length}</span>
+        </h4>
+        <div style={{ display: "flex", flexDirection: "column", gap: "10px", maxHeight: "250px", overflowY: "auto" }}>
+          {pendientes.map(p => (
+            <div key={p.id} style={{ background: editandoId === p.id ? "rgba(0, 163, 224, 0.1)" : "#f8fafc", padding: "12px", borderRadius: "10px", border: editandoId === p.id ? `2px solid ${WC_COLORS.lightBlue}` : "1px solid #e2e8f0", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px" }}>
+              <div style={{ flex: "1 1 200px" }}>
+                <div style={{ fontSize: "0.85em", color: WC_COLORS.darkBlue, marginBottom: "4px" }}><b>📤 Entregas:</b> {p.doy.join(", ")}</div>
+                <div style={{ fontSize: "0.85em", color: WC_COLORS.green }}><b>📥 Recibes:</b> {p.recibo.join(", ")}</div>
               </div>
-            ))}
-          </div>
+              <div style={{ display: "flex", gap: "5px", flexWrap: "wrap" }}>
+                <button onClick={() => cancelarPendiente(p.id)} style={{ background: "white", color: WC_COLORS.red, border: `1px solid ${WC_COLORS.red}`, padding: "6px 10px", borderRadius: "8px", fontWeight: "bold", cursor: "pointer", fontSize: "0.8em" }}>Cancelar</button>
+                <button onClick={() => editarPendiente(p)} style={{ background: "white", color: WC_COLORS.lightBlue, border: `1px solid ${WC_COLORS.lightBlue}`, padding: "6px 10px", borderRadius: "8px", fontWeight: "bold", cursor: "pointer", fontSize: "0.8em" }}>✏️ Editar</button>
+                <button onClick={() => confirmarTruequePendiente(p)} style={{ background: WC_COLORS.green, color: "white", border: "none", padding: "6px 10px", borderRadius: "8px", fontWeight: "bold", cursor: "pointer", fontSize: "0.8em", boxShadow: "0 2px 4px rgba(0,0,0,0.1)" }}>✅ Completar</button>
+              </div>
+            </div>
+          ))}
         </div>
-      )}
+      </div>
 
-      {/* AVISO DE EDICIÓN ACTIVA */}
       {editandoId && (
         <div style={{ background: WC_COLORS.lightBlue, color: "white", padding: "15px", borderRadius: "12px", marginBottom: "20px", textAlign: "center", fontWeight: "bold" }}>
           ✏️ Estás editando una propuesta pendiente. Selecciona las monas y guarda los cambios.
@@ -615,7 +611,6 @@ function PvP({ usuario }) {
         </div>
       </div>
 
-      {/* BARRA FLOTANTE DINÁMICA - AHORA LA IMAGEN SIEMPRE ESTÁ VISIBLE */}
       {(doy.length > 0 || recibo.length > 0) && (
         <div style={{ position: "fixed", bottom: "20px", left: "50%", transform: "translateX(-50%)", background: "white", padding: "15px 20px", borderRadius: "50px", boxShadow: "0 10px 30px rgba(0,0,0,0.3)", display: "flex", alignItems: "center", gap: "10px", zIndex: 1000, border: editandoId ? `3px solid ${WC_COLORS.lightBlue}` : `3px solid ${WC_COLORS.darkBlue}`, width: "95%", maxWidth: "700px", justifyContent: "space-between", flexWrap: "wrap" }}>
           
@@ -625,8 +620,6 @@ function PvP({ usuario }) {
           </div>
 
           <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-            
-            {/* BOTÓN IMAGEN SIEMPRE VISIBLE */}
             <button 
               onClick={descargarResumen} 
               disabled={generandoImagen}

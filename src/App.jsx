@@ -6,14 +6,13 @@ import { collection, getDocs, query, orderBy, doc, getDoc } from 'firebase/fires
 
 import Login from './Login';
 import Album from './Album';
-import Trueques from './Trueques'; // Lo mantenemos importado por si alguna vez quieres revivirlo
+import Trueques from './Trueques'; 
 import Estadisticas from './Estadisticas';
 import Progreso from './Progreso';
 import MapaCiudades from './MapaCiudades';
 import Admin from './Admin';
 import PvP from './PvP';
 
-// COLORES OFICIALES MUNDIAL 2026
 const WC_COLORS = {
   green: "#00B140",
   darkBlue: "#00205B",
@@ -27,7 +26,6 @@ function App() {
   const [usuario, setUsuario] = useState(null);
   const [nombreUsuario, setNombreUsuario] = useState('');
   
-  // Mantiene la lógica de si vienes desde un QR (Auto-Match va directo a PvP)
   const [pestaña, setPestaña] = useState(() => {
     const params = new URLSearchParams(window.location.search);
     return params.has('match') ? 'pvp' : 'album';
@@ -35,8 +33,10 @@ function App() {
   
   const [publicaciones, setPublicaciones] = useState([]);
   const [cargando, setCargando] = useState(true);
-
   const [promptInstalacion, setPromptInstalacion] = useState(null);
+
+  // NUEVO ESTADO: Controla si el menú del usuario está abierto
+  const [menuAbierto, setMenuAbierto] = useState(false);
 
   const EMAILS_ADMIN = ["miglio3929@gmail.com"]; 
   const esAdmin = usuario && EMAILS_ADMIN.includes(usuario.email);
@@ -68,12 +68,8 @@ function App() {
       e.preventDefault();
       setPromptInstalacion(e);
     };
-
     window.addEventListener('beforeinstallprompt', manejarAvisoInstalacion);
-
-    return () => {
-      window.removeEventListener('beforeinstallprompt', manejarAvisoInstalacion);
-    };
+    return () => window.removeEventListener('beforeinstallprompt', manejarAvisoInstalacion);
   }, []);
 
   const cargarGlobal = async () => {
@@ -96,153 +92,132 @@ function App() {
     }
   };
 
- if (cargando) return (
+  if (cargando) return (
     <div style={{
       position: "fixed", top: 0, left: 0, width: "100%", height: "100%",
-      background: "#16171d", 
-      color: "white", display: "flex", flexDirection: "column", alignItems: "center",
+      background: "#16171d", color: "white", display: "flex", flexDirection: "column", alignItems: "center",
       justifyContent: "center", zIndex: 9999, fontFamily: "'Inter', sans-serif"
     }}>
-      <img 
-        src="/estadio.jpg" 
-        alt="Fondo Estadio" 
-        style={{
-          position: "absolute", top: 0, left: 0, width: "100%", height: "100%",
-          objectFit: "cover", opacity: 0.15, filter: "blur(5px)", 
-          zIndex: -1
-        }}
-      />
-      
-      <img 
-        src="/icono-192.png" 
-        alt="Cargando..." 
-        style={{
-          width: "90px", height: "90px", marginBottom: "25px",
-          animation: "giroSuave 2s linear infinite",
-          filter: "drop-shadow(0px 10px 15px rgba(0,0,0,0.5))"
-        }}
-      />
-     
-      <h2 style={{
-        margin: "0 0 10px 0", fontSize: "1.8em", fontWeight: "900",
-        letterSpacing: "1px", color: "#fff", textShadow: "0 2px 4px rgba(0,0,0,0.8)" 
-      }}>
-        MisMonas 2026
-      </h2>
-      <p style={{
-        margin: 0, fontSize: "0.95em", color: WC_COLORS.lightBlue,
-        opacity: 0.9, letterSpacing: "2px", textTransform: "uppercase", fontWeight: "bold",
-        textShadow: "0 1px 3px rgba(0,0,0,0.8)"
-      }}>
-        Iniciando Plataforma...
-      </p>
-
-      <style>{`
-        @keyframes giroSuave {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-      `}</style>
+      <img src="/estadio.jpg" alt="Fondo Estadio" style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.15, filter: "blur(5px)", zIndex: -1 }} />
+      <img src="/icono-192.png" alt="Cargando..." style={{ width: "90px", height: "90px", marginBottom: "25px", animation: "giroSuave 2s linear infinite", filter: "drop-shadow(0px 10px 15px rgba(0,0,0,0.5))" }} />
+      <h2 style={{ margin: "0 0 10px 0", fontSize: "1.8em", fontWeight: "900", letterSpacing: "1px", color: "#fff", textShadow: "0 2px 4px rgba(0,0,0,0.8)" }}>MisMonas 2026</h2>
+      <p style={{ margin: 0, fontSize: "0.95em", color: WC_COLORS.lightBlue, opacity: 0.9, letterSpacing: "2px", textTransform: "uppercase", fontWeight: "bold", textShadow: "0 1px 3px rgba(0,0,0,0.8)" }}>Iniciando Plataforma...</p>
+      <style>{`@keyframes giroSuave { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
     </div>
   );
 
   if (!usuario) return <Login />;
 
   const estiloBoton = (id, especial = false) => ({
-    flex: "1 1 120px",
-    padding: "12px 5px",
-    borderRadius: "12px",
-    border: "none",
+    flex: "1 1 120px", padding: "12px 5px", borderRadius: "12px", border: "none",
     background: pestaña === id ? (especial ? WC_COLORS.red : WC_COLORS.green) : "#f1f5f9",
     color: pestaña === id ? WC_COLORS.white : WC_COLORS.darkBlue,
-    cursor: "pointer",
-    fontWeight: "bold",
-    fontSize: "0.9em",
-    transition: "0.3s ease",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: "5px",
-    textTransform: "uppercase",
-    letterSpacing: "0.5px",
+    cursor: "pointer", fontWeight: "bold", fontSize: "0.9em", transition: "0.3s ease",
+    display: "flex", alignItems: "center", justifyContent: "center", gap: "5px",
+    textTransform: "uppercase", letterSpacing: "0.5px",
     boxShadow: pestaña === id ? `0 4px 10px ${WC_COLORS.green}40` : "none"
   });
+
+  // Determinar la inicial para el avatar
+  const inicialUsuario = nombreUsuario ? nombreUsuario.charAt(0).toUpperCase() : usuario.email.charAt(0).toUpperCase();
 
   return (
     <div style={{ backgroundColor: "#f8fafc", minHeight: "100vh", fontFamily: "'Inter', system-ui, sans-serif", color: "#1e293b" }}>
       
-      <header style={{ background: WC_COLORS.darkBlue, color: WC_COLORS.white, padding: "20px 0", borderBottom: `4px solid ${WC_COLORS.lime}`, boxShadow: "0 4px 15px rgba(0,0,0,0.15)" }}>
-        <div style={{ maxWidth: "1100px", margin: "auto", padding: "0 20px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "15px" }}>
+      {/* OVERLAY INVISIBLE PARA CERRAR EL MENÚ AL HACER CLIC AFUERA */}
+      {menuAbierto && (
+        <div 
+          onClick={() => setMenuAbierto(false)} 
+          style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", zIndex: 999 }}
+        />
+      )}
+
+      <header style={{ background: WC_COLORS.darkBlue, color: WC_COLORS.white, padding: "15px 0", borderBottom: `4px solid ${WC_COLORS.lime}`, boxShadow: "0 4px 15px rgba(0,0,0,0.15)", position: "relative" }}>
+        <div style={{ maxWidth: "1100px", margin: "auto", padding: "0 20px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           
-          <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
-            <div style={{ background: WC_COLORS.white, width: "45px", height: "45px", borderRadius: "12px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.5em", boxShadow: "0 4px 10px rgba(0,0,0,0.2)" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <div style={{ background: WC_COLORS.white, width: "40px", height: "40px", borderRadius: "10px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.4em", boxShadow: "0 4px 10px rgba(0,0,0,0.2)" }}>
               ⚽
             </div>
             <div>
-              <h1 style={{ margin: 0, fontSize: "1.8em", fontWeight: "900", letterSpacing: "-1px" }}>
-                Mis<span style={{ color: WC_COLORS.lime }}>Monas</span>
-              </h1>
-              <p style={{ margin: 0, fontSize: "0.75em", opacity: 0.8, textTransform: "uppercase", letterSpacing: "1px" }}>Colección Oficial 2026</p>
+              <h1 style={{ margin: 0, fontSize: "1.5em", fontWeight: "900", letterSpacing: "-1px" }}>Mis<span style={{ color: WC_COLORS.lime }}>Monas</span></h1>
+              <p style={{ margin: 0, fontSize: "0.65em", opacity: 0.8, textTransform: "uppercase", letterSpacing: "1px" }}>Colección Oficial 2026</p>
             </div>
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: "15px", flexWrap: "wrap" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
             
             {promptInstalacion && (
               <button 
                 onClick={instalarAplicacion} 
                 style={{ 
-                  background: WC_COLORS.lime, color: WC_COLORS.darkBlue, 
-                  padding: "8px 15px", borderRadius: "8px", cursor: "pointer", 
-                  fontSize: "0.85em", fontWeight: "900", border: "none", 
-                  boxShadow: `0 4px 10px rgba(151, 215, 0, 0.4)`,
-                  display: "flex", alignItems: "center", gap: "5px",
+                  background: WC_COLORS.lime, color: WC_COLORS.darkBlue, padding: "8px 12px", borderRadius: "8px", 
+                  cursor: "pointer", fontSize: "0.8em", fontWeight: "900", border: "none", 
+                  boxShadow: `0 4px 10px rgba(151, 215, 0, 0.4)`, display: "flex", alignItems: "center", gap: "5px",
                   animation: "latido 2s infinite"
                 }}
               >
-                📲 INSTALAR APP
+                📲 INSTALAR
               </button>
             )}
 
-            <div style={{ textAlign: "right", display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
-              <div style={{ fontSize: "0.9em", fontWeight: "bold", textTransform: "capitalize" }}>
-                {nombreUsuario || usuario.email.split('@')[0]}
-              </div>
-              {esAdmin && <span style={{ background: WC_COLORS.red, color: WC_COLORS.white, padding: "2px 8px", borderRadius: "4px", fontSize: "0.65em", fontWeight: "bold", marginTop: "2px" }}>ADMIN</span>}
+            {/* MENÚ DE PERFIL DESPLEGABLE */}
+            <div style={{ position: "relative", zIndex: 1000 }}>
+              <button 
+                onClick={() => setMenuAbierto(!menuAbierto)}
+                style={{
+                  background: WC_COLORS.lightBlue, color: "white", width: "40px", height: "40px",
+                  borderRadius: "50%", border: "2px solid white", fontWeight: "900", fontSize: "1.1em",
+                  cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+                  boxShadow: "0 2px 5px rgba(0,0,0,0.2)", transition: "transform 0.2s"
+                }}
+              >
+                {inicialUsuario}
+              </button>
+
+              {menuAbierto && (
+                <div style={{
+                  position: "absolute", top: "50px", right: "0", background: "white", color: WC_COLORS.darkBlue,
+                  borderRadius: "12px", boxShadow: "0 10px 25px rgba(0,0,0,0.3)", padding: "15px", minWidth: "160px",
+                  display: "flex", flexDirection: "column", gap: "10px", animation: "aparecer 0.2s ease-out"
+                }}>
+                  <div style={{ borderBottom: "1px solid #e2e8f0", paddingBottom: "10px", textAlign: "center" }}>
+                    <div style={{ fontSize: "0.95em", fontWeight: "900", textTransform: "capitalize", wordBreak: "break-word" }}>
+                      {nombreUsuario || usuario.email.split('@')[0]}
+                    </div>
+                    {esAdmin && <div style={{ display: "inline-block", background: WC_COLORS.red, color: "white", padding: "3px 8px", borderRadius: "5px", fontSize: "0.7em", fontWeight: "bold", marginTop: "5px" }}>ADMINISTRADOR</div>}
+                  </div>
+                  
+                  <button 
+                    onClick={() => signOut(auth)} 
+                    style={{
+                      background: "#fef2f2", color: WC_COLORS.red, border: "none", padding: "10px",
+                      borderRadius: "8px", fontWeight: "900", cursor: "pointer", display: "flex", 
+                      alignItems: "center", justifyContent: "center", gap: "5px", width: "100%"
+                    }}
+                  >
+                    🚪 Cerrar Sesión
+                  </button>
+                </div>
+              )}
             </div>
-            <button 
-              onClick={() => signOut(auth)} 
-              style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.3)", color: "white", padding: "8px 15px", borderRadius: "8px", cursor: "pointer", fontSize: "0.8em", transition: "0.3s" }}
-              onMouseOver={(e) => e.target.style.background = "rgba(255,255,255,0.1)"}
-              onMouseOut={(e) => e.target.style.background = "transparent"}
-            >
-              SALIR
-            </button>
+
           </div>
         </div>
       </header>
 
       <style>{`
-        @keyframes latido {
-          0% { transform: scale(1); }
-          50% { transform: scale(1.05); }
-          100% { transform: scale(1); }
-        }
+        @keyframes latido { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        @keyframes aparecer { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
       `}</style>
 
       <div style={{ maxWidth: "1100px", margin: "auto", padding: "0 20px" }}>
-        <div style={{ background: "white", marginTop: "-20px", padding: "25px", borderRadius: "20px", boxShadow: "0 10px 30px rgba(0,0,0,0.08)", marginBottom: "40px" }}>
+        <div style={{ background: "white", marginTop: "-20px", padding: "25px", borderRadius: "20px", boxShadow: "0 10px 30px rgba(0,0,0,0.08)", marginBottom: "40px", position: "relative", zIndex: 1 }}>
           
           <nav style={{ display: "flex", gap: "10px", marginBottom: "30px", flexWrap: "wrap" }}>
             <button onClick={() => setPestaña('album')} style={estiloBoton('album')}>📖 Mi Álbum</button>
             <button onClick={() => setPestaña('progreso')} style={estiloBoton('progreso')}>📈 Progreso</button>
-            
-            {/* EL MÓDULO ANTIGUO QUEDA OCULTO */}
-            {/* <button onClick={() => setPestaña('trueques')} style={estiloBoton('trueques')}>🤝 Intercambio</button> */}
-            
             <button onClick={() => setPestaña('estadisticas')} style={estiloBoton('estadisticas')}>🌍 Mercado</button>
-            
-            {/* EL MÓDULO PVP AHORA TOMA EL NOMBRE PRINCIPAL */}
             <button onClick={() => setPestaña('pvp')} style={estiloBoton('pvp')}>🤝 Intercambiar</button>
 
             {esAdmin && (
@@ -256,9 +231,6 @@ function App() {
           <main style={{ minHeight: "400px" }}>
             {pestaña === 'album' && <Album usuario={usuario} />}
             {pestaña === 'progreso' && <Progreso />}
-            
-            {/* {pestaña === 'trueques' && <Trueques usuarioActual={usuario} />} */}
-            
             {pestaña === 'estadisticas' && <Estadisticas />}
             {pestaña === 'pvp' && <PvP usuario={usuario} />}
             {pestaña === 'mapa' && esAdmin && <MapaCiudades publicaciones={publicaciones} />}
@@ -267,9 +239,7 @@ function App() {
         </div>
 
         <footer style={{ textAlign: "center", paddingBottom: "30px" }}>
-          <p style={{ color: "#94a3b8", fontSize: "0.85em", margin: 0 }}>
-            <b>MisMonas</b> © 2026 | Sistema de Coleccionistas<br/>            
-          </p>
+          <p style={{ color: "#94a3b8", fontSize: "0.85em", margin: 0 }}><b>MisMonas</b> © 2026 | Sistema de Coleccionistas</p>
         </footer>
       </div>
     </div>

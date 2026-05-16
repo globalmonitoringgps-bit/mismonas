@@ -5,10 +5,10 @@ import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 
 const WC_COLORS = { green: "#00B140", darkBlue: "#00205B", lightBlue: "#00A3E0", red: "#E4002B", lime: "#97D700" };
 
-// ORDEN PERSONALIZADO SOLICITADO POR EL USUARIO
+// ORDEN PERSONALIZADO CON FWC CORREGIDO HASTA 19
 const seccionesAlbum = [
   { prefijo: "", nombre: "Especial Panini", bandera: "/logo_panini_especial.png", inicio: 0, fin: 0 },
-  { prefijo: "FWC", nombre: "Especiales FIFA", bandera: "https://upload.wikimedia.org/wikipedia/commons/a/aa/FIFA_logo_without_slogan.svg", inicio: 1, fin: 20 },
+  { prefijo: "FWC", nombre: "Especiales FIFA", bandera: "https://upload.wikimedia.org/wikipedia/commons/a/aa/FIFA_logo_without_slogan.svg", inicio: 1, fin: 19 },
   { prefijo: "MEX", nombre: "México", bandera: "https://flagcdn.com/w40/mx.png", inicio: 1, fin: 20 },
   { prefijo: "RSA", nombre: "Sudáfrica", bandera: "https://flagcdn.com/w40/za.png", inicio: 1, fin: 20 },
   { prefijo: "KOR", nombre: "Corea del Sur", bandera: "https://flagcdn.com/w40/kr.png", inicio: 1, fin: 20 },
@@ -107,7 +107,7 @@ function Album({ usuario }) {
   };
 
   const reiniciarAlbum = async () => {
-    if (window.confirm("Estas seguro? Se borrara todo tu progreso.")) {
+    if (window.confirm("¿Estás seguro? Se borrará todo tu progreso.")) {
       const confirmacion = window.prompt("Escribe 'BORRAR' para confirmar:");
       if (confirmacion === "BORRAR") {
         const resetData = {};
@@ -121,10 +121,10 @@ function Album({ usuario }) {
 
   const llenarEquipo = async (seccion) => {
     if (bloqueado) {
-      alert("Desbloquea el candado arriba para poder modificar las monas.");
+      alert("⚠️ Desbloquea el candado arriba para poder modificar las monas.");
       return;
     }
-    if (!window.confirm(`Estas seguro de marcar todo el equipo de ${seccion.nombre} como obtenido?`)) return;
+    if (!window.confirm(`¿Estás seguro de marcar todo el equipo de ${seccion.nombre} como obtenido?`)) return;
     
     const nuevoInventario = { ...inventario };
     const actualizacionesDB = {};
@@ -172,29 +172,29 @@ function Album({ usuario }) {
       }
 
       if (repetidasSeccion.length > 0) {
-        repetidasPorPais.push(`🔸 ${seccion.nombre}: ${repetidasSeccion.join(", ")}`);
+        repetidasPorPais.push(`🔸 *${seccion.nombre}:* ${repetidasSeccion.join(", ")}`);
       }
       if (faltantesSeccion.length > 0) {
-        faltantesPorPais.push(`🔹 ${seccion.nombre}: ${faltantesSeccion.join(", ")}`);
+        faltantesPorPais.push(`🔹 *${seccion.nombre}:* ${faltantesSeccion.join(", ")}`);
       }
     });
 
-    let mensaje = "📱 Lista generada desde MisMonas\n\n🏆 Hola! Estoy llenando el album oficial del Mundial 2026.\n\n";
+    let mensaje = "📱 *Lista generada desde MisMonas*\n\n🏆 *¡Hola! Estoy llenando el álbum oficial del Mundial 2026.*\n\n";
 
     if (repetidasPorPais.length > 0) {
-      mensaje += `📦 TENGO REPETIDAS (${totalRepetidas}):\n${repetidasPorPais.join("\n")}\n\n`;
+      mensaje += `*📦 TENGO REPETIDAS (${totalRepetidas}):*\n${repetidasPorPais.join("\n")}\n\n`;
     } else {
-      mensaje += `📦 TENGO REPETIDAS:\nNinguna por ahora.\n\n`;
+      mensaje += `*📦 TENGO REPETIDAS:*\nNinguna por ahora.\n\n`;
     }
 
     if (faltantesPorPais.length > 0) {
-      mensaje += `💎 ME FALTAN (${totalFaltantes}):\n${faltantesPorPais.join("\n")}\n\n`;
+      mensaje += `*💎 ME FALTAN (${totalFaltantes}):*\n${faltantesPorPais.join("\n")}\n\n`;
     } else {
-      mensaje += `💎 ME FALTAN:\nYa llene el album!\n\n`;
+      mensaje += `*💎 ME FALTAN:*\n¡Ya llené el álbum!\n\n`;
     }
 
-    mensaje += "👉 Revisas si tienes alguna que me sirva o si te sirve alguna de las mias? Hagamos trueque! ⚽\n\n";
-    mensaje += "📥 Descarga la app y gestiona tu album aqui:\nhttps://mismonas.online";
+    mensaje += "👉 ¿Revisas si tienes alguna que me sirva o si te sirve alguna de las mías? ¡Hagamos trueque! ⚽\n\n";
+    mensaje += "📥 *Descarga la app y gestiona tu álbum aquí:*\nhttps://mismonas.online";
 
     const url = `https://wa.me/?text=${encodeURIComponent(mensaje)}`;
     window.open(url, '_blank');
@@ -244,7 +244,7 @@ function Album({ usuario }) {
     <div style={{ fontFamily: "'Inter', sans-serif", maxWidth: "800px", margin: "auto", padding: "10px", paddingBottom: "80px" }}>
       
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "15px", flexWrap: "wrap", gap: "10px" }}>
-        <h3 style={{ margin: 0, color: WC_COLORS.darkBlue, fontSize: "1.4em", fontWeight: "900" }}>Mi Album</h3>
+        <h3 style={{ margin: 0, color: WC_COLORS.darkBlue, fontSize: "1.4em", fontWeight: "900" }}>Mi Álbum</h3>
         
         <div style={{ display: "flex", gap: "10px" }}>
           <button 
@@ -304,7 +304,7 @@ function Album({ usuario }) {
         <input 
           ref={inputRef}
           type="text" 
-          placeholder="Busca rapido (Ej: ARG10...)" 
+          placeholder="Busca rápido (Ej: ARG10...)" 
           value={busqueda}
           onChange={(e) => setBusqueda(e.target.value.toUpperCase().trim())}
           onKeyDown={manejarKeyDown}
@@ -316,7 +316,7 @@ function Album({ usuario }) {
         />
         <button 
           onClick={() => setBloqueado(!bloqueado)}
-          title={bloqueado ? "Desbloquear edicion" : "Bloquear edicion para deslizar"}
+          title={bloqueado ? "Desbloquear edición" : "Bloquear edición para deslizar"}
           style={{
             background: bloqueado ? WC_COLORS.red : WC_COLORS.green,
             color: "white", border: "none", borderRadius: "10px",
